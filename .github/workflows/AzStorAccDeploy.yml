@@ -29,3 +29,9 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Azure Storage Acc Bicep Deploy
+        working-directory: '${{github.workspace}}/src/bicep'
+        run: |
+          az deployment group create --resource-group 2158167ResGrp --template-file ./azure_resource.bicep
+
