@@ -125,4 +125,4 @@ jobs:
         if: ${{ matrix.runDeployment == 'true' }}
         working-directory: '${{github.workspace}}/src/bicep'
         run: |
-          az deployment create --resource-group 2158167ResGrp --location canadacentral --template-file ./azure_resource.bicep --parameters ./parameter.json
+          az deployment group create --resource-group 2158167ResGrp --location canadacentral --template-file ./azure_resource.bicep --parameters ./parameter.json
