@@ -30,7 +30,7 @@ jobs:
         if: ${{ matrix.runBicepLinter == 'true' }}
         working-directory: '${{github.workspace}}/src/bicep'
         run: |
-          az bicep build --file ./azure_resource.bicep --parameters ./parameter.json --outdir ${{ env.TEMPLATE_FILE_DIRECTORY }}/jsonFilesForScan
+          az bicep build --file ./azure_resource.bicep  --outdir ${{ env.TEMPLATE_FILE_DIRECTORY }}/jsonFilesForScan
           ls ${{ env.TEMPLATE_FILE_DIRECTORY }}/jsonFilesForScan
 
       - name: Run Template Validation
