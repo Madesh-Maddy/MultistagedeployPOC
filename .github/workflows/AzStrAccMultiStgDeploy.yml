@@ -1,36 +1,52 @@
-# This is a basic workflow to help you get started with Actions
+name: Deploy Bicep files
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_run:
+    workflows: []
+    types:
+      - manual
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  deploy:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    strategy:
+      matrix:
+        runBicepLinter: [true, false]
+        runTemplateValidation: [true, false]
+        runWhatIfTests: [true, false]
+        runDeployment: [true, false]
+
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Set up Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Run Bicep Linter
+        if: ${{ matrix.runBicepLinter == 'true' }}
+        working-directory: '${{github.workspace}}/src/bicep'
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          az bicep build --file ./azure_resource.bicep --outdir ${{ env.TEMPLATE_FILE_DIRECTORY }}/jsonFilesForScan
+          ls ${{ env.TEMPLATE_FILE_DIRECTORY }}/jsonFilesForScan
+
+      - name: Run Template Validation
+        if: ${{ matrix.runTemplateValidation == 'true' }}
+        working-directory: '${{github.workspace}}/src/bicep'
+        run: |
+          az deployment sub validate --name mydeployment1 --location canada_central --template-file ./azure_resource.bicep --parameters ./parameter.json
+
+      - name: Run What-If Tests
+        if: ${{ matrix.runWhatIfTests == 'true' }}
+        working-directory: '${{github.workspace}}/src/bicep'
+        run: |
+          az deployment sub what-if --name mydeployment1 --location canadacentral --template-file ./azure_resource.bicep --parameters ./parameter.json
+
+      - name: Deploy Resource
+        if: ${{ matrix.runDeployment == 'true' }}
+        working-directory: '${{github.workspace}}/src/bicep'
+        run: |
+          az deployment create --location canadacentral --template-file ./azure_resource.bicep --parameters ./parameter.json
