@@ -13,6 +13,6 @@ resource storageaccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
     minimumTlsVersion: 'TLS1_2'
   }
   sku: {
-    name: 'Premium_LRS'
+    name: 'Standard_LRS'
   }
 }
