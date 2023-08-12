@@ -104,7 +104,7 @@ jobs:
         # if: ${{ matrix.runWhatIfTests == 'true' }}
         working-directory: '${{github.workspace}}/src/bicep'
         run: |
-          az deployment group what-if --name mydeployment1 --resource-group 2158167ResGrp --location canadacentral --template-file ./azure_resource.bicep --parameters ./parameter.json
+          az deployment group what-if --name mydeployment1 --resource-group 2158167ResGrp --template-file ./azure_resource.bicep --parameters ./parameter.json
 
 
   # This workflow contains a single job called "Deploy"
@@ -132,4 +132,4 @@ jobs:
         # if: ${{ matrix.runDeployment == 'true' }}
         working-directory: '${{github.workspace}}/src/bicep'
         run: |
-          az deployment group create --resource-group 2158167ResGrp --location canadacentral --template-file ./azure_resource.bicep --parameters ./parameter.json
+          az deployment group create --resource-group 2158167ResGrp --template-file ./azure_resource.bicep --parameters ./parameter.json
