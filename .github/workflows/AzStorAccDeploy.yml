@@ -31,10 +31,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      # - name: Create Output Directory
-      #   # if: ${{ matrix.runBicepLinter == 'true' }}
-      #   run: |
-      #     mkdir -p ${{ github.workspace }}/src/bicep/jsonFilesForScan
+      - name: Create Output Directory
+        # if: ${{ matrix.runBicepLinter == 'true' }}
+        run: |
+          mkdir -p ${{ github.workspace }}/src/bicep/jsonFilesForScan
 
       - name: Azure-Login
         uses: azure/login@v1
