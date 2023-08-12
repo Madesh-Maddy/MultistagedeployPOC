@@ -34,7 +34,7 @@ jobs:
       - name: Create Output Directory
         # if: ${{ matrix.runBicepLinter == 'true' }}
         run: |
-          mkdir -p ${{ env.TEMPLATE_FILE_DIRECTORY }}/jsonFilesForScan
+          mkdir -p ${{ github.workspace }}/src/bicep/jsonFilesForScan
 
       - name: Azure-Login
         uses: azure/login@v1
@@ -45,8 +45,10 @@ jobs:
         # if: ${{ matrix.runBicepLinter == 'true' }}
         working-directory: '${{github.workspace}}/src/bicep'
         run: |
-          az bicep build --file ./azure_resource.bicep  --outdir ${{ env.TEMPLATE_FILE_DIRECTORY }}/jsonFilesForScan
-          ls ${{ env.TEMPLATE_FILE_DIRECTORY }}/jsonFilesForScan
+          # az bicep build --file ./azure_resource.bicep  --outdir ${{ env.TEMPLATE_FILE_DIRECTORY }}/jsonFilesForScan
+          # ls ${{ env.TEMPLATE_FILE_DIRECTORY }}/jsonFilesForScan
+          az bicep build --file ./azure_resource.bicep  --outdir ./jsonFilesForScan
+          ls ./jsonFilesForScan
 
 
   # This workflow contains a single job called "Validate"
