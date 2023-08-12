@@ -15,23 +15,100 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+  strategy:
+    matrix:
+      runBicepLinter: [true, false]
+      runTemplateValidation: [true, false]
+      runWhatIfTests: [true, false]
+      runDeployment: [true, false]
+        # This workflow contains a single job called "Lint"
+        Lint:
+          name: runBicepLinter
+          # The type of runner that the job will run on
+          runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+          # Steps represent a sequence of tasks that will be executed as part of the job
+          steps:
+            # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+            - uses: actions/checkout@v3
 
-      - name: Azure-Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+            - name: Azure-Login
+              uses: azure/login@v1
+              with:
+                creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Azure Storage Acc Bicep Deploy
-        working-directory: '${{github.workspace}}/src/bicep'
-        run: |
-          az deployment group create --resource-group 2158167ResGrp --template-file ./azure_resource.bicep --parameters ./parameter.json
+            - name: Run Bicep Linter
+              if: ${{ matrix.runBicepLinter == 'true' }}
+              working-directory: '${{github.workspace}}/src/bicep'
+              run: |
+                az bicep build --file ./azure_resource.bicep  --outdir ${{ env.TEMPLATE_FILE_DIRECTORY }}/jsonFilesForScan
+                ls ${{ env.TEMPLATE_FILE_DIRECTORY }}/jsonFilesForScan
 
+
+        # This workflow contains a single job called "Validate"
+        Validate:
+          name: runTemplateValidation
+          # The type of runner that the job will run on
+          runs-on: ubuntu-latest
+
+          # Steps represent a sequence of tasks that will be executed as part of the job
+          steps:
+            # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+            - uses: actions/checkout@v3
+
+            - name: Azure-Login
+              uses: azure/login@v1
+              with:
+                creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+            - name: Run Template Validation
+              if: ${{ matrix.runTemplateValidation == 'true' }}
+              working-directory: '${{github.workspace}}/src/bicep'
+              run: |
+                az deployment sub validate --name mydeployment1 --location canada_central --template-file ./azure_resource.bicep --parameters ./parameter.json
+        
+        
+        # This workflow contains a single job called "Preview"
+        Preview:
+          name: runWhatIfTests
+          # The type of runner that the job will run on
+          runs-on: ubuntu-latest
+
+          # Steps represent a sequence of tasks that will be executed as part of the job
+          steps:
+            # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+            - uses: actions/checkout@v3
+
+            - name: Azure-Login
+              uses: azure/login@v1
+              with:
+                creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+            - name: Run What-If Tests
+              if: ${{ matrix.runWhatIfTests == 'true' }}
+              working-directory: '${{github.workspace}}/src/bicep'
+              run: |
+                az deployment sub what-if --name mydeployment1 --location canadacentral --template-file ./azure_resource.bicep --parameters ./parameter.json
+
+
+        # This workflow contains a single job called "Deploy"
+        Deploy:
+          name: runDeployment
+          # The type of runner that the job will run on
+          runs-on: ubuntu-latest
+
+          # Steps represent a sequence of tasks that will be executed as part of the job
+          steps:
+            # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+            - uses: actions/checkout@v3
+
+            - name: Azure-Login
+              uses: azure/login@v1
+              with:
+                creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+            - name: Deploy Resource
+              if: ${{ matrix.runDeployment == 'true' }}
+              working-directory: '${{github.workspace}}/src/bicep'
+              run: |
+                az deployment create --location canadacentral --template-file ./azure_resource.bicep --parameters ./parameter.json
