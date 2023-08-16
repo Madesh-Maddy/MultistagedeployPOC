@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_and_deploy:
+  Storage_Account_build_and_deploy:
     runs-on: ubuntu-latest
 
     steps:
